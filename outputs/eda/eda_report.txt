@@ -1,0 +1,51 @@
+======================================================================
+EXPLORATORY DATA ANALYSIS REPORT
+Healthcare Analytics: 30-Day Readmission Prediction
+======================================================================
+
+1. DATASET OVERVIEW
+----------------------------------------
+   Total patient encounters: 101,766
+   Number of features: 140
+   Memory usage: 113.98 MB
+
+2. TARGET VARIABLE ANALYSIS
+----------------------------------------
+   Readmitted within 30 days: 11,357 (11.16%)
+   Not readmitted within 30 days: 90,409 (88.84%)
+   Class imbalance ratio: 1:7
+
+3. CLINICAL IMPLICATIONS
+----------------------------------------
+   - The ~11% readmission rate is consistent with diabetic population norms
+   - Significant class imbalance requires weighted classification
+   - Focus on Recall to minimize missed high-risk patients
+
+4. KEY FEATURE STATISTICS
+----------------------------------------
+   time_in_hospital:
+      Mean: 4.40, Std: 2.99
+      Min: 1, Max: 14
+   num_lab_procedures:
+      Mean: 43.10, Std: 19.67
+      Min: 1, Max: 132
+   num_medications:
+      Mean: 16.02, Std: 8.13
+      Min: 1, Max: 81
+   number_inpatient:
+      Mean: 0.64, Std: 1.26
+      Min: 0, Max: 21
+   number_emergency:
+      Mean: 0.20, Std: 0.93
+      Min: 0, Max: 76
+   num_procedures:
+      Mean: 1.34, Std: 1.71
+      Min: 0, Max: 6
+
+5. RECOMMENDATIONS
+----------------------------------------
+   - Use scale_pos_weight parameter in XGBoost
+   - Prioritize Recall metric over Accuracy
+   - Apply SHAP for model interpretability
+
+======================================================================
