@@ -142,7 +142,12 @@ def load_training_info():
     """Load training info for feature columns."""
     info_path = Path("outputs/model/xgboost_readmission_model.info.joblib")
     if info_path.exists():
-        return joblib.load(info_path)
+        try:
+            return joblib.load(info_path)
+        except Exception:
+            # If loading fails due to compatibility issues, return None
+            # We'll extract feature columns from processed data instead
+            return None
     return None
 
 
@@ -153,6 +158,18 @@ def load_processed_data():
     if data_path.exists():
         return pd.read_csv(data_path)
     return None
+
+
+@st.cache_data
+def get_feature_columns():
+    """Get feature columns from processed data."""
+    data_path = Path("data/processed_data.csv")
+    if data_path.exists():
+        df = pd.read_csv(data_path, nrows=1)
+        # Remove target column if present
+        cols = [c for c in df.columns if c != 'target']
+        return cols
+    return []
 
 
 # =============================================================================
@@ -345,8 +362,17 @@ def main():
         st.error("Could not load the model. Please ensure the model is trained by running `python main.py`")
         st.stop()
     
-    # Get feature columns from training info
-    feature_columns = training_info.get('feature_columns', []) if training_info else []
+    # Get feature columns - try training info first, then fall back to processed data
+    feature_columns = []
+    if training_info and 'feature_columns' in training_info:
+        feature_columns = training_info.get('feature_columns', [])
+    
+    if not feature_columns:
+        feature_columns = get_feature_columns()
+    
+    if not feature_columns:
+        st.error("Could not load feature columns. Please ensure data/processed_data.csv exists.")
+        st.stop()
     
     # ==========================================================================
     # HEADER
