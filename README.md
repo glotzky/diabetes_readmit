@@ -1,300 +1,254 @@
-# Healthcare Analytics: Predicting 30-Day Hospital Readmission for Diabetic Patients
+# Predicting 30-Day Hospital Readmission (Diabetic Patients)
 
-A machine learning portfolio project demonstrating end-to-end healthcare analytics, from data preprocessing to deployment-ready prediction functions.
+End-to-end machine learning project for predicting 30-day hospital readmissions using structured EHR data.
 
-## Clinical Context
+This project covers:
+- Data ingestion
+- Cleaning + feature engineering
+- Model training (XGBoost)
+- Evaluation + SHAP explainability
+- Deployment-ready prediction interface
 
-Hospital readmissions within 30 days of discharge are a critical quality metric for healthcare systems:
+---
 
-- **Cost Impact**: Medicare penalizes hospitals with excess readmission rates (Hospital Readmissions Reduction Program)
-- **Patient Safety**: Early readmissions often indicate gaps in care quality or discharge planning
-- **Intervention Opportunity**: Identifying high-risk patients enables targeted Transition of Care programs:
-  - Follow-up phone calls within 48 hours
-  - Home health visits
-  - Care management enrollment
-  - Enhanced discharge education
+## Problem
 
-This project builds a binary classification model to predict which diabetic patients are at high risk of readmission within 30 days, enabling proactive clinical intervention.
+30-day readmissions are a key healthcare quality metric. Identifying high-risk diabetic patients enables early intervention (follow-ups, care management, discharge optimization).
+
+This is framed as a **binary classification problem**:
+- Target: readmitted within 30 days (yes/no)
+
+---
 
 ## Dataset
 
-**Source**: [UCI Machine Learning Repository - Diabetes 130-US Hospitals](https://archive.ics.uci.edu/ml/datasets/diabetes+130-us+hospitals+for+years+1999-2008)
+**Source:** UCI ML Repository – Diabetes 130-US Hospitals (1999–2008)
 
-| Attribute | Value |
-|-----------|-------|
-| Instances | 101,766 patient encounters |
-| Features | 47+ clinical and demographic variables |
-| Time Period | 1999-2008 |
-| Hospitals | 130 US hospitals |
-| Target | 30-day readmission (binary) |
+- 101,766 patient encounters  
+- 47+ demographic + clinical features  
+- 130 US hospitals  
+- Target: 30-day readmission  
 
-### Key Features
+Feature categories:
+- Demographics (age, gender, race)
+- Admission details (type, discharge disposition, LOS)
+- Utilization (inpatient, emergency visits)
+- Diagnoses (ICD-9 codes)
+- Diabetes-related labs + medications
 
-- **Demographics**: Age, gender, race
-- **Admission Details**: Admission type, discharge disposition, time in hospital
-- **Clinical**: Number of procedures, lab tests, medications
-- **Diagnoses**: Primary, secondary, and additional diagnoses (ICD-9 codes)
-- **Diabetes-specific**: A1C result, glucose serum, diabetic medications
+---
 
 ## Project Structure
 
-```
 project1/
-├── main.py                     # Complete ML pipeline orchestration
-├── requirements.txt            # Python dependencies
-├── README.md                   # This file
+├── main.py
+├── requirements.txt
+├── README.md
 ├── data/
-│   └── processed_data.csv      # Preprocessed dataset (generated)
+│ └── processed_data.csv
 ├── src/
-│   ├── __init__.py            # Package initialization
-│   ├── data_loader.py         # Data loading from UCI Repository
-│   ├── preprocessing.py       # Data cleaning & feature engineering
-│   ├── eda.py                 # Exploratory Data Analysis
-│   ├── model.py               # XGBoost model training
-│   ├── evaluation.py          # Metrics, ROC, SHAP analysis
-│   └── prediction.py          # Deployment-ready prediction function
+│ ├── data_loader.py
+│ ├── preprocessing.py
+│ ├── eda.py
+│ ├── model.py
+│ ├── evaluation.py
+│ └── prediction.py
 └── outputs/
-    ├── eda/                   # EDA visualizations
-    │   ├── readmission_distribution.png
-    │   ├── correlation_heatmap.png
-    │   ├── feature_distributions.png
-    │   └── eda_report.txt
-    ├── evaluation/            # Model evaluation outputs
-    │   ├── confusion_matrix.png
-    │   ├── roc_curve.png
-    │   ├── precision_recall_curve.png
-    │   ├── shap_feature_importance.png
-    │   └── shap_summary_plot.png
-    └── model/                 # Saved model artifacts
-        ├── xgboost_readmission_model.joblib
-        └── xgboost_readmission_model.info.joblib
-```
+├── eda/
+├── evaluation/
+└── model/
 
-## Installation
+
+---
+
+## Setup
 
 ```bash
-# Clone the repository
 git clone <repository-url>
 cd project1
 
-# Create virtual environment (recommended)
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate  # Windows: venv\Scripts\activate
 
-# Install dependencies
 pip install -r requirements.txt
-```
-
-## Quick Start
-
-### Run the Complete Pipeline
-
-```bash
+Run Pipeline
 python main.py
-```
+Pipeline steps:
 
-This will:
-1. Download the dataset from UCI ML Repository
-2. Preprocess data (handle missing values, group ICD-9 codes, encode features)
-3. Generate EDA visualizations
-4. Train XGBoost model with class imbalance handling
-5. Evaluate model performance
-6. Generate SHAP explainability analysis
-7. Test deployment prediction function
+Download dataset
 
-### Command Line Options
+Clean + preprocess
 
-```bash
-# Skip EDA visualizations (faster)
+Feature engineering (ICD grouping, encoding)
+
+Train XGBoost classifier
+
+Evaluate model
+
+Generate SHAP explanations
+
+Save model artifacts
+
+Optional flags:
+
 python main.py --skip-eda
-
-# Skip SHAP analysis (faster)
 python main.py --skip-shap
-
-# Run hyperparameter tuning
 python main.py --tune
+Preprocessing
+Replace "?" with NaN
 
-# All options
-python main.py --skip-eda --skip-shap --tune
-```
+Impute missing values
 
-## Key Technical Components
+Group ICD-9 codes into 9 clinical categories
 
-### 1. Data Preprocessing
+One-hot encode categoricals
 
-- **Missing Value Handling**: Replace '?' placeholders with NaN, impute with appropriate strategies
-- **ICD-9 Code Grouping**: Consolidate 700+ diagnosis codes into 9 clinical categories:
-  - Circulatory, Respiratory, Digestive, Diabetes, Injury, Musculoskeletal, Genitourinary, Neoplasms, Other
-- **Feature Encoding**: One-hot encoding for categorical variables
-- **Feature Engineering**: Clinical groupings based on medical domain knowledge
+Domain-driven feature engineering
 
-### 2. Class Imbalance Handling
+ICD groupings reduce 700+ diagnosis codes into:
 
-The dataset exhibits significant class imbalance (~11% readmission rate). We address this using:
+Circulatory
 
-```python
-scale_pos_weight = n_negative / n_positive  # ~8:1 ratio
-```
+Respiratory
 
-This parameter in XGBoost gives more weight to the minority class (readmissions), improving Recall without explicit oversampling.
+Digestive
 
-### 3. Model: XGBoost Classifier
+Diabetes
 
-**Why XGBoost for Healthcare?**
-- Handles mixed feature types naturally
-- Robust to missing values
-- Built-in feature importance
-- Supports class weighting
-- Excellent performance on tabular data
+Injury
 
-**Default Hyperparameters** (clinically optimized):
-```python
+Musculoskeletal
+
+Genitourinary
+
+Neoplasms
+
+Other
+
+Class Imbalance
+~11% positive class (readmitted).
+
+Handled via:
+
+scale_pos_weight = n_negative / n_positive
+This improves recall without explicit resampling.
+
+Model
+Algorithm: XGBoost Classifier
+
+Why:
+
+Strong tabular performance
+
+Handles missing values
+
+Supports class weighting
+
+Good feature importance support
+
+Default parameters:
+
 {
-    'n_estimators': 200,
-    'max_depth': 6,
-    'learning_rate': 0.1,
-    'min_child_weight': 5,
-    'scale_pos_weight': ~8.0  # Calculated from data
+    "n_estimators": 200,
+    "max_depth": 6,
+    "learning_rate": 0.1,
+    "min_child_weight": 5,
+    "scale_pos_weight": ~8
 }
-```
+Evaluation Targets
+Metric	Goal	Rationale
+Recall	>0.75	Minimize missed high-risk patients
+AUC-ROC	>0.70	Overall discrimination
+Precision	>0.50	Avoid alert fatigue
+Recall is prioritized over precision due to clinical cost asymmetry.
 
-### 4. Model Evaluation
+Example Performance
+Recall:     0.78
+AUC-ROC:    0.72
+Precision:  0.53
+Top predictive features:
 
-| Metric | Target | Clinical Significance |
-|--------|--------|----------------------|
-| **Recall** | > 0.75 | Catch most high-risk patients (minimize False Negatives) |
-| **AUC-ROC** | > 0.70 | Overall discrimination ability |
-| **Precision** | > 0.50 | Avoid overwhelming care teams with false alarms |
+number_inpatient
 
-**Why Recall > Precision?**
+number_emergency
 
-In healthcare, missing a high-risk patient (False Negative) is more costly than a false alarm (False Positive):
-- False Negative: Patient doesn't receive needed intervention → potential adverse outcome
-- False Positive: Extra follow-up call → minor resource expenditure
+num_medications
 
-### 5. SHAP Explainability
+time_in_hospital
 
-SHAP (SHapley Additive exPlanations) transforms the "black box" model into an interpretable tool:
+discharge_disposition
 
-- **Global Feature Importance**: Which features drive predictions overall?
-- **Individual Explanations**: Why was THIS patient flagged as high-risk?
-- **Clinical Validation**: Do model insights align with medical knowledge?
+Explainability (SHAP)
+SHAP is used for:
+
+Global feature importance
+
+Per-patient explanations
+
+Clinical validation of model logic
 
 Example interpretation:
-> "This patient has a 67% readmission risk. Top risk factors: 3 prior inpatient visits (+0.15), 2 emergency visits (+0.08), 22 medications (+0.06)"
 
-## Usage: Prediction Function
+67% readmission risk
+Key drivers: prior inpatient visits, emergency visits, medication burden
 
-### Single Patient Prediction
-
-```python
+Inference
+Single Patient
 from src.prediction import predict_readmission
 
 patient_data = {
-    'age': '[60-70)',
-    'gender': 'Female',
-    'time_in_hospital': 7,
-    'num_medications': 18,
-    'number_inpatient': 2,
-    'number_emergency': 1,
-    'diag_1': '428',  # Heart failure
-    'diabetesMed': 'Yes',
-    # ... other features
+    "age": "[60-70)",
+    "gender": "Female",
+    "time_in_hospital": 7,
+    "num_medications": 18,
+    "number_inpatient": 2,
+    "number_emergency": 1,
+    "diag_1": "428",
+    "diabetesMed": "Yes"
 }
 
 result = predict_readmission(patient_data)
 
-print(f"Risk Score: {result['risk_percentage']}")  # "42.3%"
-print(f"Risk Tier: {result['risk_tier']}")          # "high"
-print(f"Action: {result['recommendation']}")        # Clinical guidance
-```
-
-### Batch Prediction
-
-```python
+print(result["risk_percentage"])
+print(result["risk_tier"])
+print(result["recommendation"])
+Batch Prediction
 from src.prediction import PatientPredictor
 import pandas as pd
 
-# Initialize predictor
-predictor = PatientPredictor('outputs/model/xgboost_readmission_model.joblib')
+predictor = PatientPredictor(
+    "outputs/model/xgboost_readmission_model.joblib"
+)
 
-# Predict for multiple patients
-patients_df = pd.read_csv('new_patients.csv')
-results = predictor.predict_batch(patients_df)
+df = pd.read_csv("new_patients.csv")
+results = predictor.predict_batch(df)
 
-# Stratify by risk tier
-stratified = predictor.stratify_population(patients_df)
-# Returns: {'low': df, 'moderate': df, 'high': df, 'very_high': df}
-```
+risk_groups = predictor.stratify_population(df)
+Risk tiers:
 
-### Risk Tier Actions
+Tier	Threshold
+Low	<15%
+Moderate	15–30%
+High	30–50%
+Very High	>50%
+Future Work
+Add lab trend features
 
-| Tier | Threshold | Recommended Action |
-|------|-----------|-------------------|
-| Low | < 15% | Standard discharge protocol |
-| Moderate | 15-30% | Enhanced discharge education |
-| High | 30-50% | Follow-up call within 48-72 hours |
-| Very High | > 50% | Care management program referral |
+Incorporate social determinants
 
-## Results
+Model calibration
 
-### Model Performance (Example)
+Ensemble with clinical risk scores
 
-```
-Target Metric Achievement:
---------------------------
-✓ Recall: 0.78 (Target: >0.75)
-✓ AUC-ROC: 0.72 (Target: >0.70)
-✓ Precision: 0.53 (Target: >0.50)
-```
+REST API deployment
 
-### Top Predictive Features
+EHR integration
 
-1. `number_inpatient` - Prior hospitalizations indicate disease severity
-2. `number_emergency` - Emergency visits suggest unstable condition
-3. `num_medications` - Medication count reflects comorbidity burden
-4. `time_in_hospital` - Longer stays indicate complex cases
-5. `discharge_disposition` - Discharge destination affects follow-up care
+Citation
+Strack et al. (2014)
+Impact of HbA1c Measurement on Hospital Readmission Rates
+BioMed Research International
 
-## Future Enhancements
+UCI Machine Learning Repository
+Diabetes 130-US Hospitals Dataset
 
-1. **Feature Engineering**
-   - Add lab value trends
-   - Incorporate social determinants of health
-   - Include medication adherence data
-
-2. **Model Improvements**
-   - Ensemble with clinical risk scores (LACE, HOSPITAL)
-   - Time-series modeling for repeat admissions
-   - Calibration for better probability estimates
-
-3. **Deployment**
-   - REST API wrapper
-   - EHR integration (FHIR/HL7)
-   - Real-time alerting system
-
-## Citation
-
-If you use this project or the dataset, please cite:
-
-```
-Strack, B., DeShazo, J.P., Gennings, C., Olmo, J.L., Ventura, S., Cios, K.J., 
-& Clore, J.N. (2014). Impact of HbA1c Measurement on Hospital Readmission Rates: 
-Analysis of 70,000 Clinical Database Patient Records. BioMed Research International.
-
-UCI Machine Learning Repository:
-Clore, J., Cios, K., DeShazo, J., & Strack, B. (2014). Diabetes 130-US Hospitals 
-for Years 1999-2008 [Dataset]. https://doi.org/10.24432/C5230J
-```
-
-## License
-
-This project is for educational and portfolio demonstration purposes. The dataset is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
-
-## Contact
-
-For questions about this project or collaboration opportunities, please reach out through GitHub issues.
-
----
-
-*This project demonstrates proficiency in: Python, pandas, scikit-learn, XGBoost, SHAP, matplotlib, seaborn, healthcare analytics, and machine learning best practices.*
