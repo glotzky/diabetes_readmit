@@ -62,74 +62,51 @@ project1/
 ---
 
 ## Setup
-
-```bash
 git clone <repository-url>
 cd project1
 
 python -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
-
 pip install -r requirements.txt
+
 Run Pipeline
 python main.py
+
 Pipeline steps:
-
 Download dataset
-
 Clean + preprocess
-
 Feature engineering (ICD grouping, encoding)
-
 Train XGBoost classifier
-
 Evaluate model
-
 Generate SHAP explanations
-
 Save model artifacts
 
 Optional flags:
-
 python main.py --skip-eda
 python main.py --skip-shap
 python main.py --tune
+
 Preprocessing
 Replace "?" with NaN
-
 Impute missing values
-
 Group ICD-9 codes into 9 clinical categories
-
 One-hot encode categoricals
-
 Domain-driven feature engineering
 
 ICD groupings reduce 700+ diagnosis codes into:
-
 Circulatory
-
 Respiratory
-
 Digestive
-
 Diabetes
-
 Injury
-
 Musculoskeletal
-
 Genitourinary
-
 Neoplasms
-
 Other
-
 Class Imbalance
 ~11% positive class (readmitted).
 
 Handled via:
-
 scale_pos_weight = n_negative / n_positive
 This improves recall without explicit resampling.
 
@@ -137,17 +114,12 @@ Model
 Algorithm: XGBoost Classifier
 
 Why:
-
 Strong tabular performance
-
 Handles missing values
-
 Supports class weighting
-
 Good feature importance support
 
 Default parameters:
-
 {
     "n_estimators": 200,
     "max_depth": 6,
@@ -166,29 +138,21 @@ Example Performance
 Recall:     0.78
 AUC-ROC:    0.72
 Precision:  0.53
+
 Top predictive features:
-
 number_inpatient
-
 number_emergency
-
 num_medications
-
 time_in_hospital
-
 discharge_disposition
 
 Explainability (SHAP)
 SHAP is used for:
-
 Global feature importance
-
 Per-patient explanations
-
 Clinical validation of model logic
 
 Example interpretation:
-
 67% readmission risk
 Key drivers: prior inpatient visits, emergency visits, medication burden
 
@@ -237,11 +201,8 @@ Add lab trend features
 Incorporate social determinants
 
 Model calibration
-
 Ensemble with clinical risk scores
-
 REST API deployment
-
 EHR integration
 
 Citation
