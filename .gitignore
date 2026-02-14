@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Data (optional, if you want to exclude large files)
+# data/*.csv
+
+# Model outputs (optional)
+# outputs/model/*.joblib
